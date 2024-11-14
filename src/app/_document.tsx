@@ -1,17 +1,20 @@
-// src/app/layout.tsx
+// app/layout.tsx
+import type { Metadata } from 'next'
 
-import { ReactNode } from "react";
-import "@/styles/globals.scss";
+export const metadata: Metadata = {
+  title: 'Your App Name',
+  description: 'Your app description',
+}
 
-export const metadata = {
-  title: "Your App Title",
-  description: "Your App Description",
-};
-
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="en">
       <head>
+        {/* KaTeX stylesheet */}
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/katex@0.15.0/dist/katex.min.css"
@@ -23,5 +26,5 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {children}
       </body>
     </html>
-  );
+  )
 }
