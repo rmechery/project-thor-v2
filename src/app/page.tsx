@@ -1,7 +1,7 @@
 "use client";
 
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { JSX, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
@@ -22,9 +22,7 @@ import {
   // Import predefined theme
   ThemeSupa,
 } from "@supabase/auth-ui-shared";
-
-// import styles from "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
-// import styles from "../styles/main.scss";
+import { NULL } from "sass";
 
 type ConversationEntry = {
   message: string;
@@ -35,14 +33,26 @@ type ConversationEntry = {
 
 const updateChatbotMessage = (
   conversation: ConversationEntry[],
-  message: { interactionId: string; token: string; event: "response" }
+  message: {
+    interactionId: string;
+    token: string;
+    event: "response" | "responseEnd";
+  }
 ): ConversationEntry[] => {
   const interactionId = message.interactionId;
 
   const updatedConversation = conversation.reduce(
     (acc: ConversationEntry[], e: ConversationEntry) => [
       ...acc,
-      e.id === interactionId ? { ...e, message: e.message + message.token } : e,
+      e.id === interactionId
+        ? {
+            ...e,
+            message:
+              message.event === "responseEnd"
+                ? message.token
+                : e.message + message.token,
+          }
+        : e,
     ],
     []
   );
@@ -60,7 +70,9 @@ const updateChatbotMessage = (
       ];
 };
 
-async function loadConversationLogs(userId: string): Promise<ConversationEntry[]> {
+async function loadConversationLogs(
+  userId: string
+): Promise<ConversationEntry[]> {
   try {
     // Fetch conversation logs from Supabase
     const { data, error } = await supabaseBrowserClient
@@ -86,12 +98,6 @@ async function loadConversationLogs(userId: string): Promise<ConversationEntry[]
   }
 }
 
-// Function to sign the user out
-const signOut = async () => {
-  await supabaseBrowserClient.auth.signOut()
-};
-
-
 export default function Home() {
   const [text, setText] = useState("");
   const [conversation, setConversation] = useState<ConversationEntry[]>([]);
@@ -99,12 +105,19 @@ export default function Home() {
   const [statusMessage, setStatusMessage] = useState("Waiting for query...");
   const [userId, setUserId] = useState<string | undefined>();
 
+  // Function to sign the user out
+  const signOut = async () => {
+    await supabaseBrowserClient.auth.signOut();
+    setConversation([]);
+    setUserId(undefined);
+  };
+
   useEffect(() => {
     supabaseBrowserClient.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
-        supabaseBrowserClient.auth.onAuthStateChange((_e, newSession) =>
-          setUserId(newSession?.user.id)
-        );
+        supabaseBrowserClient.auth.onAuthStateChange((_e, newSession) => {
+          setUserId(newSession?.user.id);
+        });
       } else {
         setUserId(session?.user.id);
         loadConversationLogs(session.user.id).then(setConversation);
@@ -117,11 +130,12 @@ export default function Home() {
       <Auth
         supabaseClient={supabaseBrowserClient}
         appearance={{ theme: ThemeSupa }}
+        providers={[]}
       />
     );
 
   const channel = supabaseBrowserClient.channel(userId);
-
+  
   channel
     .on("broadcast", { event: "chat" }, ({ payload }) => {
       switch (payload.event) {
@@ -132,6 +146,7 @@ export default function Home() {
           setStatusMessage(payload.message);
           break;
         case "responseEnd":
+          setConversation((state) => updateChatbotMessage(state, payload));
         default:
           setBotIsTyping(false);
           setStatusMessage("Waiting for query...");
@@ -170,8 +185,8 @@ export default function Home() {
       .from("conversations")
       .delete()
       .eq("user_id", userId)
-      .throwOnError();    
-    
+      .throwOnError();
+
     setConversation([]);
   };
 
@@ -183,7 +198,7 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main >
+      <main>
         <div
           style={{ position: "relative", height: "98vh", overflow: "hidden" }}
         >
@@ -196,21 +211,23 @@ export default function Home() {
                   info={statusMessage}
                 />
                 <ConversationHeader.Actions>
-                <Button 
-                  style={{ padding: "0.25em" }}
-                  onClick={clearConversation}
-                   border>
+                  <Button
+                    style={{ padding: "0.25em" }}
+                    onClick={clearConversation}
+                    border
+                  >
                     Clear Conversation
                   </Button>
-                  <Button 
-                  style={{ padding: "0.25em" }}
-                   onClick={signOut} border>
+                  <Button
+                    style={{ padding: "0.25em" }}
+                    onClick={signOut}
+                    border
+                  >
                     Sign Out
                   </Button>
                 </ConversationHeader.Actions>
               </ConversationHeader>
-              
-            
+
               <MessageList
                 typingIndicator={
                   botIsTyping ? (

@@ -8,14 +8,17 @@ import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase"
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { createRetrieverTool } from "langchain/tools/retriever";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
-import { MemorySaver } from "@langchain/langgraph";
-import { v4 as uuidv4 } from "uuid";
+import { PostgresSaver } from "@langchain/langgraph-checkpoint-postgres";
+import pg from 'pg';
+
+
+const { Pool } = pg;
 
 // Initialize the models
 const llm = new ChatOpenAI({
   streaming: true,
-  model: "gpt-3.5-turbo",
-  temperature: 0.7,
+  model: "gpt-4o-mini",
+  temperature: 0,
 });
 
 const embeddings = new OpenAIEmbeddings({
@@ -38,13 +41,9 @@ const handleRequest = async ({
       queryName: "match_documents_1536",
     });
     const retriever3 = vectorStore.asRetriever();
-
     const channel = supabaseAuthedClient.channel(userId);
 
     const conversationLog = new ConversationLog(userId);
-    // const conversationHistory = await conversationLog.getConversation({
-    //   limit: 10,
-    // });
     await conversationLog.addEntry({ entry: prompt, speaker: "user" });
 
     const { data } = await supabaseAuthedClient
@@ -55,17 +54,23 @@ const handleRequest = async ({
       .throwOnError();
     const interactionId = data?.id;
 
+    const pool = new Pool({
+      connectionString: process.env.POSTGRES_DB_URL
+    });
+
+    const checkpointer = new PostgresSaver(pool);
+
     const tool2 = createRetrieverTool(retriever3, {
       name: "iso_context_retriever",
       description: "Searches and returns excerpts from the ISO NE Corpus.",
     });
     const tools2 = [tool2];
-    const memory4 = new MemorySaver();
 
     const agentExecutor3 = createReactAgent({
       llm: llm,
       tools: tools2,
-      checkpointSaver: memory4,
+      checkpointSaver: checkpointer,
+
     });
 
     channel.subscribe(async (status) => {
@@ -80,7 +85,7 @@ const handleRequest = async ({
         });
 
         const customHandler = {
-          handleLLMNewToken: async (token) => {
+          handleLLMNewToken: async (token: unknown) => {
             await channel.send({
               type: "broadcast",
               event: "chat",
@@ -91,8 +96,8 @@ const handleRequest = async ({
               },
             });
           },
-          handleLLMEnd: async (result) => {
-            await supabaseAuthedClient
+          handleLLMEnd: async (result: { generations: { text: unknown; }[][]; }) => {
+              await supabaseAuthedClient
                 .from("conversations")
                 .update({ entry: result.generations[0][0].text })
                 .eq("id", interactionId);
@@ -101,19 +106,22 @@ const handleRequest = async ({
                 event: "chat",
                 payload: {
                   event: "responseEnd",
-                  token: "END",
+                  token: result.generations[0][0].text,
                   interactionId,
                 },
               });
           },
         };
 
-        const threadId3 = uuidv4();
-        const config4 = { configurable: { thread_id: threadId3 } };
+        const threadId3 = interactionId;
+        const config4 = { 
+          configurable: { thread_id: threadId3 },
+          callbacks: [customHandler],
+        };
 
-        await agentExecutor3.stream(
+        await agentExecutor3.invoke(
           { messages: [{ role: "user", content: prompt }] },
-          { configurable: config4, callbacks: [customHandler] }
+          config4
         );
       }
     });
@@ -124,11 +132,9 @@ const handleRequest = async ({
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const {data, error} = await supabase.auth.getUser();
 
-  if (!session) {
+  if (error || !data?.user) {
     return NextResponse.json(
       {
         error: "not_authenticated",
@@ -142,7 +148,7 @@ export async function POST(req: NextRequest) {
   const { prompt } = await req.json();
   await handleRequest({
     prompt,
-    userId: session.user.id,
+    userId: data.user.id,
     supabaseAuthedClient: supabase,
   });
   return NextResponse.json({ message: "started" });
