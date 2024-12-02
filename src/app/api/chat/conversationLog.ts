@@ -45,13 +45,16 @@ class ConversationLog {
     return response;
   }
 
-  public async clearConversation() {
-    await supabaseAdminClient
+  // insert first blank AI message
+  public async insertAIMessage() : Promise<string | undefined>{
+    const { data } = await supabaseAdminClient
       .from("conversations")
-      .delete()
-      .eq("user_id", this.userId)
+      .insert({ speaker: "ai", user_id: this.userId })
+      .select()
+      .single()
       .throwOnError();
-  }
+    return data?.id;
+  }  
 }
 
-export { ConversationLog };
+export { ConversationLog};

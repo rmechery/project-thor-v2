@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ChatOpenAI } from "@langchain/openai";
 import { ConversationLog } from "./conversationLog";
+import { promptTemplate } from "./templates";
 import { createClient } from "@/utils/server";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
@@ -46,13 +47,7 @@ const handleRequest = async ({
     const conversationLog = new ConversationLog(userId);
     await conversationLog.addEntry({ entry: prompt, speaker: "user" });
 
-    const { data } = await supabaseAuthedClient
-      .from("conversations")
-      .insert({ speaker: "ai", user_id: userId })
-      .select()
-      .single()
-      .throwOnError();
-    const interactionId = data?.id;
+    const interactionId = await conversationLog.insertAIMessage();
 
     const pool = new Pool({
       connectionString: process.env.POSTGRES_DB_URL
@@ -60,17 +55,17 @@ const handleRequest = async ({
 
     const checkpointer = new PostgresSaver(pool);
 
-    const tool2 = createRetrieverTool(retriever3, {
+    const retrieverTool = createRetrieverTool(retriever3, {
       name: "iso_context_retriever",
       description: "Searches and returns excerpts from the ISO NE Corpus.",
     });
-    const tools2 = [tool2];
+    const tools = [retrieverTool];
 
     const agentExecutor3 = createReactAgent({
       llm: llm,
-      tools: tools2,
+      tools: tools,
       checkpointSaver: checkpointer,
-
+      messageModifier: promptTemplate
     });
 
     channel.subscribe(async (status) => {
@@ -113,7 +108,7 @@ const handleRequest = async ({
           },
         };
 
-        const threadId3 = interactionId;
+        const threadId3 = userId; //old was`conversationId` but didn't work
         const config4 = { 
           configurable: { thread_id: threadId3 },
           callbacks: [customHandler],

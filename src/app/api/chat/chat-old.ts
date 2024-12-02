@@ -7,7 +7,7 @@ import { RunnableSequence } from "@langchain/core/runnables";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { ConversationLog } from "./conversationLog";
 import { Metadata, getMatchesFromEmbeddings } from "./matches";
-import { templates } from "./templates";
+import { templates } from "./templates-old";
 
 const parser = new StringOutputParser();
 

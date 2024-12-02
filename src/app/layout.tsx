@@ -1,10 +1,10 @@
 // src/app/layout.tsx
-
 import { ReactNode } from "react";
 import "@/styles/globals.scss";
+import type { Metadata } from 'next'
 
-export const metadata = {
-  title: "Your App Title",
+export const metadata: Metadata = {
+  title: "Team Odin",
   description: "Your App Description",
 };
 
