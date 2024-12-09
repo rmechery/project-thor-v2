@@ -1,7 +1,6 @@
 // utils/supabase/client.ts
 import { createBrowserClient } from '@supabase/ssr'
 import { type Database } from '@/types/supabase'
-import { SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseBrowserClient = createBrowserClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
