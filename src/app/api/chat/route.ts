@@ -11,7 +11,8 @@ import { createRetrieverTool } from "langchain/tools/retriever";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { PostgresSaver } from "@langchain/langgraph-checkpoint-postgres";
 import pg from 'pg';
-export const dynamic = 'force-dynamic';
+import { connection } from 'next/server';
+
 
 const { Pool } = pg;
 
@@ -126,6 +127,8 @@ const handleRequest = async ({
 };
 
 export async function POST(req: NextRequest) {
+  await connection();
+  
   const supabase = await createClient();
   const {data, error} = await supabase.auth.getUser();
 
