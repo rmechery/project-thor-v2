@@ -127,10 +127,8 @@ const handleRequest = async ({
 };
 
 export async function POST(req: NextRequest) {
-  await connection();
-  
   const supabase = await createClient();
-  const {data, error} = await supabase.auth.getUser();
+  const { data, error } = await supabase.auth.getUser();
 
   if (error || !data?.user) {
     return NextResponse.json(
@@ -144,10 +142,46 @@ export async function POST(req: NextRequest) {
   }
 
   const { prompt } = await req.json();
-  await handleRequest({
-    prompt,
-    userId: data.user.id,
-    supabaseAuthedClient: supabase,
-  });
-  return NextResponse.json({ message: "started" });
+  try {
+    const response = await handleRequest({
+      prompt,
+      userId: data.user.id,
+      supabaseAuthedClient: supabase,
+    });
+    return NextResponse.json({ response });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: "processing_error",
+        description: (error as Error).message,
+      },
+      { status: 500 }
+    );
+  }
 }
+
+// export async function POST(req: NextRequest) {
+//   await connection();
+
+//   const supabase = await createClient();
+//   const {data, error} = await supabase.auth.getUser();
+
+//   if (error || !data?.user) {
+//     return NextResponse.json(
+//       {
+//         error: "not_authenticated",
+//         description:
+//           "The user does not have an active session or is not authenticated",
+//       },
+//       { status: 401 }
+//     );
+//   }
+
+//   const { prompt } = await req.json();
+//   await handleRequest({
+//     prompt,
+//     userId: data.user.id,
+//     supabaseAuthedClient: supabase,
+//   });
+//   return NextResponse.json({ message: "started" });
+// }
