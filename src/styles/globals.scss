@@ -1,2 +1,16 @@
 @charset "utf-8";
-@import "../../node_modules/@chatscope/chat-ui-kit-styles/themes/default/main";
+@import "./chat_overrides";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #20303B; /* Replace with your desired color */
+}
+
+@layer base {
+  h1, h2, h3, h4, h5, h6, p {
+    @apply text-white;
+  }
+}

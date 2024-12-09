@@ -57,10 +57,6 @@ const AuthWrapper: React.FC = () => {
       {userId ? (
         <ChatInterface />
       ) : (
-        // <Auth
-        //   supabaseClient={supabaseBrowserClient}
-        //   appearance={{ theme: ThemeSupa }}
-        // />
         <CustomLogin onLogin={setUserId} />
       )}
     </AuthContext.Provider>

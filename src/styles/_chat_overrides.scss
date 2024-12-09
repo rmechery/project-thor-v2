@@ -1,0 +1,25 @@
+
+
+$default-bg-color: #3E525B;
+
+$color-primary: #20303B;
+$color-primary-light: #20303B;
+$color-primary-dark: #ffffff;
+
+$color-secondary: #20303B;
+$color-secondary-light: #20303B;
+$color-secondary-dark: #ffffff;
+
+$color-text: rgba(255, 255, 255, 0.87); // #212121
+$color-text-medium: rgba(255, 255, 255, 0.6); // #666666
+$color-text-disabled: rgba(255, 255, 255, 0.38); // #9e9e9e
+$color-text-inverted: $color-text; 
+
+$conversation-header-color: rgba(255, 255, 255, 0.87); // #212121
+$conversation-header-info-color: rgba(255, 255, 255, 0.6); // #666666
+
+
+$message-content-outgoing-bg-color: #20303B;
+$color-white: #20303B;
+
+@import "@chatscope/chat-ui-kit-styles/themes/default/main";

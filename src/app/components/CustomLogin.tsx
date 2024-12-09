@@ -27,22 +27,44 @@ const CustomLogin: React.FC<{ onLogin: (userId: string) => void }> = ({ onLogin 
     }
   };
 
+  // return (
+  //   <div>
+  //     <h2>Login</h2>
+  //     <input
+  //       type="email"
+  //       placeholder="Email"
+  //       value={email}
+  //       onChange={(e) => setEmail(e.target.value)}
+  //     />
+  //     <input
+  //       type="password"
+  //       placeholder="Password"
+  //       value={password}
+  //       onChange={(e) => setPassword(e.target.value)}
+  //     />
+  //     <button onClick={handleLogin}>Login</button>
+  //   </div>
+  // );
+
   return (
-    <div>
-      <h2>Login</h2>
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button onClick={handleLogin}>Login</button>
+    <div className="landing-page">
+      <section className="cta-section">
+        <h2>Get Started</h2>
+        <p>Sign in to access your personalized compliance assistant.</p>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button onClick={handleLogin}>Sign In</button>
+      </section>
     </div>
   );
 };

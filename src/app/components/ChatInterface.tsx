@@ -1,9 +1,8 @@
 "use client";
 
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
+import remarkGfm from "remark-gfm";
 import * as timeago from "timeago.js";
 import {
   MainContainer,
@@ -16,12 +15,14 @@ import {
   Button,
 } from "@chatscope/chat-ui-kit-react";
 import { supabaseBrowserClient } from "@/utils/supabaseBrowser";
-import Error from 'next/error'
-import {AuthContextType, AuthContext} from './AuthWrapper';
+import Error from "next/error";
+import { AuthContextType, AuthContext } from "./AuthWrapper";
+import "@/styles/globals.scss";
+
 
 /**
  * Represents a conversation entry.
- * 
+ *
  * @typedef {Object} ConversationEntry
  * @property {string} message - The message content.
  * @property {"bot" | "user"} speaker - The speaker of the message.
@@ -35,20 +36,19 @@ type ConversationEntry = {
   id?: string;
 };
 
-
 /**
  * Represents a status message from the realtime channel connection.
- * 
+ *
  * @typedef {Object} ConversationEntry
  * @property {string} interactionId - The supabase channel interaction ID.
- * @property {string} token - The supabase channel streaming token.  
+ * @property {string} token - The supabase channel streaming token.
  * @property {"response" | "responseEnd"} [event] - The channel event status.
  */
 type MessageEntry = {
   interactionId: string;
   token: string;
   event: "response" | "responseEnd";
-}
+};
 
 /**
  * Updates the chatbot message in the conversation.
@@ -96,7 +96,6 @@ const updateChatbotMessage = (
         },
       ];
 };
-
 
 /**
  * Loads conversation logs for a given user from the Supabase database.
@@ -157,7 +156,7 @@ export default function ChatInterface() {
   const [conversation, setConversation] = useState<ConversationEntry[]>([]);
   const [botIsTyping, setBotIsTyping] = useState(false);
   const [statusMessage, setStatusMessage] = useState("Waiting for query...");
-  const {userId, setUserId} = useContext<AuthContextType>(AuthContext);
+  const { userId, setUserId } = useContext<AuthContextType>(AuthContext);
 
   useEffect(() => {
     if (typeof window !== "undefined" && userId) {
@@ -165,8 +164,25 @@ export default function ChatInterface() {
     }
   }, [userId]);
 
-  if (!userId){
-    return (<Error statusCode={404}></Error>);
+  const applyContentStyles = useCallback(() => {
+    document.querySelectorAll('.cs-message .cs-message__content').forEach((content, idx) => {
+      let highlightedStyle = "";
+      if(conversation[idx].speaker === "bot") {
+        highlightedStyle = 'border: 4px solid #FAB82E';
+      } else {
+        highlightedStyle = 'border: 4px solid #1999D8';
+      }
+
+      content.setAttribute('style', highlightedStyle);
+    });
+  }, [conversation]);
+
+  useEffect(() => {
+    applyContentStyles();
+  }, [conversation, applyContentStyles]); 
+
+  if (!userId) {
+    return <Error statusCode={404}></Error>;
   }
 
   const channel = supabaseBrowserClient.channel(userId);
@@ -182,9 +198,12 @@ export default function ChatInterface() {
           break;
         case "responseEnd":
           setConversation((state) => updateChatbotMessage(state, payload));
+          setBotIsTyping(false);
+          break;
         default:
           setBotIsTyping(false);
           setStatusMessage("Waiting for query...");
+          break;
       }
     })
     .subscribe();
@@ -215,12 +234,12 @@ export default function ChatInterface() {
     setText("");
   };
 
-   // Function to sign the user out
-    const signOut = async () => {
-        await supabaseBrowserClient.auth.signOut();
-        setConversation([]);
-        setUserId(undefined);
-    };
+  // Function to sign the user out
+  const signOut = async () => {
+    await supabaseBrowserClient.auth.signOut();
+    setConversation([]);
+    setUserId(undefined);
+  };
 
   const clearConversation = async () => {
     await supabaseBrowserClient
@@ -252,7 +271,7 @@ export default function ChatInterface() {
 
   return (
     <div style={{ position: "relative", height: "98vh", overflow: "hidden" }}>
-      <MainContainer>
+      <MainContainer responsive>
         <ChatContainer>
           <ConversationHeader>
             <ConversationHeader.Actions></ConversationHeader.Actions>
@@ -283,7 +302,6 @@ export default function ChatInterface() {
               return (
                 <Message
                   key={index}
-                  style={{ width: "90%" }}
                   model={{
                     type: "custom",
                     sender: entry.speaker,
@@ -291,11 +309,24 @@ export default function ChatInterface() {
                     direction:
                       entry.speaker === "bot" ? "incoming" : "outgoing",
                   }}
+                  style={{ 
+                    width: "80%",
+                    // "border": entry.speaker === "bot" ? "4px solid #FAB82E" : "4px solid #1999D8",
+                  }}
                 >
-                  <Message.CustomContent>
-                    <ReactMarkdown remarkPlugins={[remarkMath, rehypeKatex]}>
-                      {entry.message}
-                    </ReactMarkdown>
+                  <Message.CustomContent
+                  >
+                    <div className="prose w-full max-w-none p-4"
+                    style={{
+                        fontSize: '1rem',
+                        lineHeight: '1rem',
+                        padding: '0', // Remove all padding
+                        margin: '0', // Optionally, remove all margins as well
+                    }}>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]} className="w-full break-words">
+                        {entry.message}
+                      </ReactMarkdown>
+                    </div>
                   </Message.CustomContent>
                   <Message.Footer
                     sentTime={timeago.format(entry.date)}
@@ -319,4 +350,3 @@ export default function ChatInterface() {
     </div>
   );
 }
-

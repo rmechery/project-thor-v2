@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@chatscope/chat-ui-kit-react": "^2.0.3",
+    "@chatscope/chat-ui-kit-styles": "^1.4.0",
     "@langchain/community": "^0.3.14",
     "@langchain/langgraph": "^0.2.20",
     "@langchain/langgraph-checkpoint-postgres": "^0.0.2",
@@ -26,12 +27,14 @@
     "react-dom": "^18.2.0",
     "react-markdown": "^9.0.1",
     "rehype-katex": "^7.0.1",
+    "remark-breaks": "^4.0.0",
+    "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
-    "sass": "^1.81.0",
     "supabase": "^1.223.10",
     "timeago.js": "^4.0.2"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.15",
     "@types/node": "^20",
     "@types/pg": "^8.11.10",
     "@types/react": "^18",
@@ -39,6 +42,7 @@
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "postcss": "^8",
+    "sass": "^1.82.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }

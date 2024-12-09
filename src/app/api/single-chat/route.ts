@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ChatOpenAI } from "@langchain/openai";
 import { promptTemplate } from "../chat/templates";
-import { createClient } from "@/utils/server";
 import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { createRetrieverTool } from "langchain/tools/retriever";
@@ -46,10 +45,24 @@ const handleRequest = async ({ prompt }: { prompt: string }) => {
       configurable: { thread_id: threadId3 },
     };
 
-    return await agentExecutor3.invoke(
+    const response = await agentExecutor3.invoke(
       { messages: [{ role: "user", content: prompt }] },
       config4
     );
+
+    // Extract the AI-generated answer
+    const aiMessage = response.messages[response.messages.length - 1];
+
+    const answer = aiMessage?.content || "No response generated.";
+
+    // Perform a similarity search to retrieve relevant documents
+    const searchResults = await vectorStore.similaritySearch(prompt, 2); // Retrieve top 2 relevant documents
+
+    // Extract the content of the retrieved documents
+    const retrievedContexts = searchResults.map((doc) => doc.pageContent);
+
+    return { answer, retrievedContexts };
+
   } catch (error) {
     console.error(error);
   }
@@ -58,21 +71,19 @@ const handleRequest = async ({ prompt }: { prompt: string }) => {
 export async function POST(req: NextRequest) {
     try {
       const { prompt } = await req.json();
-      const output = await handleRequest({ prompt });
-  
-      if (!output) {
-        // Handle the case where handleRequest doesn't return a valid response
+      const result = await handleRequest({ prompt });
+      if (!result) {
         return NextResponse.json(
           { error: "Failed to generate a response." },
           { status: 500 }
         );
       }
-
-      const answer = output.messages[output.messages.length - 1].content;
+      const { answer, retrievedContexts } = result;
   
       return NextResponse.json({
         query: prompt,
-        response: answer
+        response: answer,
+        contexts: retrievedContexts,
       });
     } catch (error) {
       console.error("Error in POST handler:", error);
@@ -82,4 +93,33 @@ export async function POST(req: NextRequest) {
       );
     }
   }
+  
+
+// export async function POST(req: NextRequest) {
+//     try {
+//       const { prompt } = await req.json();
+//       const { answer, retrievedContexts } = await handleRequest({ prompt });
+  
+//       if (!output) {
+//         // Handle the case where handleRequest doesn't return a valid response
+//         return NextResponse.json(
+//           { error: "Failed to generate a response." },
+//           { status: 500 }
+//         );
+//       }
+
+//       const answer = output.messages[output.messages.length - 1].content;
+  
+//       return NextResponse.json({
+//         query: prompt,
+//         response: answer
+//       });
+//     } catch (error) {
+//       console.error("Error in POST handler:", error);
+//       return NextResponse.json(
+//         { error: "An unexpected error occurred." },
+//         { status: 500 }
+//       );
+//     }
+//   }
   
