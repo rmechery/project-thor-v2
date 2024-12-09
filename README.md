@@ -1,36 +1,20 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Welcome to Project Thor!
+
+<img src="documentation_images/iso_logo.jpg" alt="ISO New England's Logo" width="200"/>
+
+Project Thor is a chatbot for retrieving information from ISO New England's [rules and procedures](https://www.iso-ne.com/participate/rules-procedures). It takes a conversational approach to surfacing critical information about various regulations that would be otherwise difficult to find when rules and regulations are spread across so many different resources on the ISO website.
+
+<!-- TODO: add better example image, this answer may be slightly incorrect. -->
+![An image of an example query with the chatbot asking about the December data collection deadline for submitting DER data](documentation_images/example_chat.png)
 
 ## Getting Started
 
-First, run the development server:
+Getting Project Thor up and running is very straightforward:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. `git clone` this repository to your local machine
+2. Run `npm install` in a terminal in the cloned folder
+   1. If you receive an error here about your Node.js version at this step, go to [this website](https://nodejs.org/en) to update your Node version
+3. Run `npm run dev` at the same terminal location as step 2 and wait for the terminal's `Ready in [SECONDS]s` message (the second green-checked message pictured below).
+![A picture of the result of running `npm run dev` in a Visual Studio Code terminal](documentation_images/successful_run.png)
+4. Open your browser of choice (e.g., Google Chrome) and go to the url [http://localhost:3000](http://localhost:3000)
+5. TBD (env file link?)
