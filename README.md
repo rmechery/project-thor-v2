@@ -22,4 +22,4 @@ Getting Project Thor up and running is very straightforward:
 <br /><img src="documentation_images/successful_run.png" alt="A picture of the result of running `npm run dev` in a Visual Studio Code terminal" width="400" />
 5. Open your browser of choice (e.g., Google Chrome) and go to the url [http://localhost:3000](http://localhost:3000)
 6. Once ThorGPT is open, you will be prompted to login. For testing purposes, please refer to the login credentials in the "Credentials" document in the [same folder we stored the .env file in](https://drive.google.com/drive/folders/1PrpMbe5DQK8nIjpgg_kb3dzP70Vpoco1?usp=sharing).
-7. After logging in, you should be faced with the ChatGPT-style chat window. Start asking questions about ISO New England (see the sample chat above)!
+7. After logging in, you should be faced with the ChatGPT-style chat window. Start asking questions about ISO New England (see the sample chat above)! Make sure to press "Clear Conversation" in the top right if you'd like to clear any past conversation.
