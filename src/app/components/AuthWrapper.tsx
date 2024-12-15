@@ -1,11 +1,13 @@
-'use client';
+"use client";
 
-import { createContext, useEffect, useState } from 'react';
-import { supabaseBrowserClient } from '@/utils/supabaseBrowser';
-// import { Auth } from '@supabase/auth-ui-react';
-// import { ThemeSupa } from '@supabase/auth-ui-shared';
-import ChatInterface from './ChatInterface';
-import CustomLogin from './CustomLogin';
+import { createContext, useEffect, useState } from "react";
+import { supabaseBrowserClient } from "@/utils/supabaseBrowser";
+import ChatInterface from "./ChatInterface";
+// import CustomLogin from './CustomLogin';
+import { Auth } from "@supabase/auth-ui-react";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
+
+
 
 /**
  * @typedef {Object} AuthContextType
@@ -29,7 +31,7 @@ export const AuthContext = createContext<AuthContextType>({
 /**
  * AuthWrapper component handles user authentication state and renders
  * the appropriate UI based on the authentication status.
- * 
+ *
  * @returns {JSX.Element} The AuthWrapper component.
  */
 const AuthWrapper: React.FC = () => {
@@ -57,7 +59,32 @@ const AuthWrapper: React.FC = () => {
       {userId ? (
         <ChatInterface />
       ) : (
-        <CustomLogin onLogin={setUserId} />
+        // <CustomLogin onLogin={setUserId} />
+        <div
+          className="flex flex-col items-center justify-center min-h-screen"
+          style={{ backgroundColor: "#3E525B" }} // ISO New England Dark Bluish Gray
+        >
+          <div className="text-center mb-6">
+            <h1
+              className="mb-4 text-4xl font-extrabold leading-none tracking-tight md:text-5xl lg:text-6xl"
+              style={{ color: "#FAB82E" }} // ISO New England Yellow
+            >
+              Project Thor
+            </h1>
+            <p className="mb-6 text-lg font-normal text-gray-100 lg:text-xl sm:px-16 xl:px-48">
+              Built by Team Odin. Sign in to interact with the ISO New
+              England AI assistant.
+            </p>
+          </div>
+          <div className="w-full max-w-3xl px-4">
+            <Auth
+              supabaseClient={supabaseBrowserClient}
+              appearance={{ theme: ThemeSupa }}
+              theme="dark" // Options: 'default', 'dark', 'evenDarker'
+              providers={[]}
+            />
+          </div>
+        </div>
       )}
     </AuthContext.Provider>
   );
